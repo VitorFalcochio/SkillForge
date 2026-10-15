@@ -14,6 +14,7 @@ import {
 } from '@agentskills/core';
 import { validate } from '@agentskills/validator';
 import type { Diagnostic } from '@agentskills/validator';
+import { registerAgentCommands } from './agents.js';
 import { printEvaluation } from './evaluation.js';
 import { installSkill } from './install.js';
 
@@ -22,6 +23,9 @@ const defaultCatalog = fileURLToPath(
 );
 const defaultEvaluations = fileURLToPath(
   new URL('../../../evals/', import.meta.url),
+);
+const defaultAgents = fileURLToPath(
+  new URL('../../../agents/', import.meta.url),
 );
 const program = new Command();
 
@@ -55,7 +59,7 @@ async function confirmOverwrite(target: string): Promise<boolean> {
   });
   try {
     const answer = await prompt.question(
-      `Replace existing skill at ${target}? [y/N] `,
+      `Replace existing installation at ${target}? [y/N] `,
     );
     return /^(y|yes)$/i.test(answer.trim());
   } finally {
@@ -68,6 +72,11 @@ program
   .description('Discover, validate, and install local Agent Skills.')
   .version('0.1.0')
   .option('--catalog <path>', 'local skill catalog directory', defaultCatalog)
+  .option(
+    '--agent-catalog <path>',
+    'local agent catalog directory',
+    defaultAgents,
+  )
   .showHelpAfterError();
 
 program
@@ -187,6 +196,13 @@ program
     // Recorded model output informs; only deterministic skill checks gate the exit code.
     if (report.static.some((check) => !check.passed)) process.exitCode = 1;
   });
+
+registerAgentCommands(program, {
+  agentCatalog: () => program.opts<{ agentCatalog: string }>().agentCatalog,
+  skillCatalog: () => program.opts<{ catalog: string }>().catalog,
+  printDiagnostics,
+  confirmOverwrite,
+});
 
 try {
   await program.parseAsync();

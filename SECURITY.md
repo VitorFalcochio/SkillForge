@@ -28,6 +28,22 @@ current source release is maintained during this initial phase.
 - Dependency lifecycle scripts are disabled. Review dependency updates and the
   committed lockfile as part of the software supply chain.
 
+## Agents
+
+Agent manifests are untrusted input. They are parsed with a strict schema and
+size limits, contain no scripts, and are never executed during validation or
+installation. Generated Claude Code agents receive an explicit tool allowlist.
+Codex custom agent files cannot restrict sandbox, approval, edit, or web settings;
+those agents inherit the parent session, so set restrictive permissions there.
+Every critical restriction that a platform cannot fully enforce must be
+acknowledged in the manifest, is printed at installation, and is stated in the
+generated instructions. Instructions are guidance to a model, not a security
+boundary.
+
+Agent installation canonicalizes the base, rejects links and junctions below it,
+writes only inside the platform agent directory, refuses name conflicts, and
+replaces files only after confirmation or `--force`.
+
 ## Evaluation suites
 
 Evaluation suites, fixtures, and recorded results are untrusted data. The `eval`

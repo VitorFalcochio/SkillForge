@@ -19,6 +19,9 @@ there is no hosted registry or published npm package yet.
   performance, security, testing, DevOps, AI agents, and documentation, plus four
   meta skills for creating, evaluating, reviewing, and optimizing skills. Each has
   inputs, workflows, constraints, verification criteria, and worked examples.
+- Eight specialized agents defined in portable manifests and generated as Claude
+  Code subagents or Codex custom agents, with tool allowlists where the platform
+  supports them and explicit reporting where it does not.
 - A local catalog with `list` and `info` commands.
 - Evaluation suites with an `eval` command that runs deterministic static checks
   and grades recorded agent output; it never runs a model or executes fixtures.
@@ -65,6 +68,8 @@ pnpm agentskills validate skills --strict
 pnpm agentskills eval skill-reviewer
 pnpm agentskills install code-auditor --agent claude
 pnpm agentskills install bug-investigator --agent codex --scope user
+pnpm agentskills agents list
+pnpm agentskills agents install code-reviewer --platform claude --with-skills
 ```
 
 Project scope is the default and uses the current working directory. To install
@@ -132,6 +137,34 @@ Meta skills for skill authors and maintainers live in `skills/meta/`:
 See [usage scenarios](examples/engineering-workflows.md) for realistic requests
 and [evaluating skills](docs/evaluating-skills.md) for evaluation suites.
 
+## Agents
+
+Agents are delegated roles built on the skills above. Each is defined once in
+`agents/<id>/agent.yaml` and generated into the target platform's format at
+installation. See [agents](docs/agents.md) for the compatibility matrix,
+manifest format, and security model.
+
+| Agent                 | Role                                                               | Related skills                                          |
+| --------------------- | ------------------------------------------------------------------ | ------------------------------------------------------- |
+| `software-architect`  | Architecture analysis, boundaries, trade-offs, and plans; no edits | api-architect, database-architect, performance-engineer |
+| `frontend-specialist` | Accessible, responsive, reusable UI and rendering performance      | ui-architect, react-engineer, nextjs-engineer           |
+| `backend-specialist`  | Services, APIs, validation, errors, and database integration       | api-architect, python-engineer, database-architect      |
+| `security-auditor`    | Defensive security review without edits or destructive tests       | security-reviewer                                       |
+| `qa-engineer`         | Test strategy, automated tests, failures, and flaky tests          | test-engineer, bug-investigator                         |
+| `devops-specialist`   | Pipelines, containers, deployment reliability, and rollback        | devops-engineer                                         |
+| `ai-engineer`         | Tool calling, structured outputs, evaluation, cost, and latency    | ai-agent-architect                                      |
+| `code-reviewer`       | Correctness, maintainability, and regression review; no edits      | code-auditor, performance-engineer                      |
+
+```sh
+pnpm agentskills agents info security-auditor --platform codex   # preview the generated file
+pnpm agentskills agents install security-auditor --platform codex --with-skills
+```
+
+Claude Code receives a tool allowlist and preloaded skills. Codex custom agent
+files cannot restrict sandbox, approvals, edits, or web access, and cannot attach
+skills; these gaps are acknowledged in each manifest, printed during installation,
+and written into the agent's instructions.
+
 ## Development and contribution
 
 ```sh
@@ -139,8 +172,8 @@ pnpm check
 ```
 
 This checks lint, formatting, TypeScript compilation, test types, automated tests
-(including every bundled evaluation suite's static checks), and the bundled skill
-catalog. `pnpm test` builds and runs tests independently.
+(including every bundled evaluation suite's static checks), the bundled skill
+catalog, and strict validation of the bundled agents. `pnpm test` builds and runs tests independently.
 Tests use isolated temporary directories under the ignored `.tmp/` directory.
 
 Read [CONTRIBUTING.md](CONTRIBUTING.md), the [architecture](docs/architecture.md),

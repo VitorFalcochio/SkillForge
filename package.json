@@ -16,8 +16,9 @@
     "format:check": "prettier --check .",
     "test": "pnpm build && vitest run",
     "validate:skills": "node packages/cli/dist/index.js validate skills",
+    "validate:agents": "node packages/cli/dist/index.js agents validate agents --strict",
     "agentskills": "node packages/cli/dist/index.js",
-    "check": "pnpm lint && pnpm format:check && pnpm typecheck && vitest run && pnpm validate:skills"
+    "check": "pnpm lint && pnpm format:check && pnpm typecheck && vitest run && pnpm validate:skills && pnpm validate:agents"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

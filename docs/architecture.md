@@ -7,17 +7,21 @@ packages/cli ───────► packages/validator ───────�
       └───────────────────────────────────────► packages/core
 skills/  (portable skill data, read by the packages)
 evals/   (evaluation suites and recorded results, read by core)
+agents/  (portable agent manifests, read by core and the validator)
 ```
 
 `@agentskills/core` owns the portable Zod metadata schema, YAML parsing, bounded
 filesystem traversal, local catalog discovery, path containment, and installation
-destination adapters. It also owns the evaluation suite and result schemas, their
+destination adapters. It also owns the agent manifest schema, agent catalog discovery, the Claude
+Code and Codex agent adapters, and the evaluation suite and result schemas, their
 bounded loading, and deterministic text assertions. It performs no skill
 installation or process execution.
 
 `@agentskills/validator` turns discovered skill trees into structured diagnostics.
 It uses core models and filesystem constraints, parses Markdown with remark, and
-checks local resources and GitHub-style heading anchors. Its public `validate`
+checks local resources and GitHub-style heading anchors. `validateAgents` checks
+agent manifests, related skills, tool declarations, and platform enforcement
+acknowledgements. Its public `validate`
 function returns `{ valid, skills, diagnostics }`; each diagnostic has severity,
 code, source path, message, and an optional source line.
 
@@ -62,8 +66,11 @@ evals/
 packages/
   core/src/{metadata,filesystem,catalog,adapters,evaluation,index}.ts
   validator/src/index.ts
-  cli/src/{index,install,evaluation}.ts
+  cli/src/{index,install,evaluation,agents,agent-install}.ts
+agents/
+  <id>/agent.yaml   (eight agents)
 tests/
+  agents.test.ts
   catalog.test.ts
   core.test.ts
   evaluation.test.ts
@@ -75,6 +82,7 @@ tests/
 docs/
   architecture.md
   getting-started.md
+  agents.md
   creating-skills.md
   evaluating-skills.md
   compatibility.md
@@ -140,6 +148,25 @@ No model, shell, or fixture content is executed. See
 
 Suites live outside `skills/` so that installation never copies fixtures, which
 may intentionally contain unsafe example content, into an agent's skill folder.
+
+## Agents
+
+An agent manifest is portable data. `parseAgentManifest` applies a strict schema;
+`compatibility` and `renderAgent` turn it into one platform's file. Only fields
+documented by each platform are written: `name`, `description`, `tools`, and
+`skills` in Claude Code frontmatter with the prompt as the body, and `name`,
+`description`, `developer_instructions`, and optionally `features.shell_tool` in
+Codex TOML. Tool categories map to Claude tool names; for Codex only the shell can
+be disabled. `restrictionEnforcement` classifies each denied category as enforced,
+partial, or instruction-only, and the validator requires an acknowledgement for
+every critical restriction that is not enforced.
+
+`installAgent` in the CLI validates the agent, canonicalizes the base directory,
+computes the destination inside `.claude/agents` or `.codex/agents`, refuses
+links, non-file targets, and name conflicts, requires authorization to replace a
+file, optionally installs missing related skills with the skill installer, and
+writes with an exclusive create or a same-directory rename. See
+[agents](agents.md) for formats and limitations.
 
 ## Extension points
 

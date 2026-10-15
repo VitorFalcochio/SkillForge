@@ -57,6 +57,23 @@ secrets, proprietary examples, generated dependency trees, or unlicensed content
 Contributions are provided under the repository's MIT license unless an explicitly
 reviewed compatible asset license says otherwise.
 
+## Contribute an agent
+
+Read [agents](docs/agents.md). Add `agents/<id>/agent.yaml`, grant the fewest tool
+categories the role needs, list safety-relevant denials as `restrictions`, and
+reference skills instead of duplicating their workflows. Acknowledge enforcement
+gaps per platform only when the agent remains acceptable with them. Run:
+
+```sh
+pnpm build
+pnpm agentskills agents validate agents --strict
+pnpm agentskills agents info <id> --platform claude
+pnpm agentskills agents info <id> --platform codex
+```
+
+Do not add platform fields that the adapters do not generate, and do not claim
+platform behavior that the official documentation does not describe.
+
 ## Review expectations
 
 Maintainers review contributed skills as untrusted content: they read every file

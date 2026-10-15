@@ -180,6 +180,139 @@ describe('compiled CLI smoke tests', () => {
     expect(result.code).toBe(1);
     expect(result.stderr).toContain('YAML');
   });
+  it('lists, inspects, and validates the bundled agents', async () => {
+    const list = await run(['agents', 'list'], root);
+    expect(list.code).toBe(0);
+    expect(
+      list.stdout
+        .trim()
+        .split('\n')
+        .map((line) => line.split('\t')[0]),
+    ).toEqual([
+      'ai-engineer',
+      'backend-specialist',
+      'code-reviewer',
+      'devops-specialist',
+      'frontend-specialist',
+      'qa-engineer',
+      'security-auditor',
+      'software-architect',
+    ]);
+    const info = await run(['agents', 'info', 'security-auditor'], root);
+    expect(info.stdout).toContain('Critical restrictions');
+    expect(info.stdout).toContain('Not allowed: edit (critical), partial');
+    expect(info.stdout).toContain(
+      'Not allowed: edit (critical), instruction-only',
+    );
+    const codex = await run(
+      ['agents', 'info', 'software-architect', '--platform', 'codex'],
+      root,
+    );
+    expect(codex.stdout).toContain('name = "software-architect"');
+    expect(codex.stdout).toContain('shell_tool = false');
+    const validation = await run(
+      [
+        'agents',
+        'validate',
+        fileURLToPath(new URL('../agents', import.meta.url)),
+        '--strict',
+        '--json',
+      ],
+      root,
+    );
+    expect(validation.code).toBe(0);
+    expect(JSON.parse(validation.stdout)).toEqual({
+      valid: true,
+      agents: 8,
+      diagnostics: [],
+    });
+  });
+  it('installs agents into a temporary project and refuses silent overwrite', async () => {
+    const project = path.join(root, 'project');
+    await mkdir(project);
+    const claude = await run(
+      [
+        'agents',
+        'install',
+        'code-reviewer',
+        '--platform',
+        'claude',
+        '--project',
+        project,
+      ],
+      root,
+    );
+    expect(claude.code).toBe(0);
+    expect(claude.stdout).toContain('Related skill code-auditor: missing');
+    expect(claude.stderr).toContain('critical restriction "edit" is partial');
+    const codex = await run(
+      [
+        'agents',
+        'install',
+        'code-reviewer',
+        '--platform',
+        'codex',
+        '--project',
+        project,
+        '--with-skills',
+      ],
+      root,
+    );
+    expect(codex.code).toBe(0);
+    expect(codex.stdout).toContain('Related skill code-auditor: installed');
+    expect(
+      await readFile(
+        path.join(project, '.codex', 'agents', 'code-reviewer.toml'),
+        'utf8',
+      ),
+    ).toContain('name = "code-reviewer"');
+    const again = await run(
+      [
+        'agents',
+        'install',
+        'code-reviewer',
+        '--platform',
+        'claude',
+        '--project',
+        project,
+      ],
+      root,
+    );
+    expect(again.code).toBe(1);
+    expect(again.stderr).toContain('already exists');
+    const forced = await run(
+      [
+        'agents',
+        'install',
+        'code-reviewer',
+        '--platform',
+        'claude',
+        '--project',
+        project,
+        '--force',
+      ],
+      root,
+    );
+    expect(forced.stdout).toContain('Replaced code-reviewer');
+  });
+  it('rejects unknown agents, platforms, and invalid agent trees', async () => {
+    expect(
+      (await run(['agents', 'info', 'missing-agent'], root)).stderr,
+    ).toContain('Unknown agent');
+    const platform = await run(
+      ['agents', 'install', 'code-reviewer', '--platform', 'cursor'],
+      root,
+    );
+    expect(platform.code).not.toBe(0);
+    expect(platform.stderr).toContain('cursor');
+    const empty = await run(['agents', 'validate', root], root);
+    expect(empty.code).toBe(1);
+    expect(empty.stderr).toContain('NO_AGENTS');
+    await mkdir(path.join(root, 'broken'));
+    const broken = await run(['agents', 'validate', root], root);
+    expect(broken.code).toBe(1);
+    expect(broken.stderr).toContain('MISSING_MANIFEST');
+  });
   it('evaluates a bundled suite without claiming unrecorded results', async () => {
     const result = await run(['eval', 'skill-reviewer'], root);
     expect(result.code).toBe(0);

@@ -265,3 +265,5 @@ export async function validate(target: string): Promise<ValidationResult> {
     diagnostics,
   };
 }
+
+export * from './agents.js';

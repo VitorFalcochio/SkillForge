@@ -73,6 +73,18 @@ This replaces the entire previous tree and removes personal additions. Installat
 does not execute scripts and copies files with `0644` permissions where supported;
 invoke a reviewed script with its interpreter if necessary.
 
+## Install an agent
+
+```sh
+pnpm agentskills agents list
+pnpm agentskills agents info code-reviewer --platform claude
+pnpm agentskills agents install code-reviewer --platform claude --with-skills
+pnpm agentskills agents install code-reviewer --platform codex --scope user
+```
+
+Review the printed warnings: they list restrictions the platform cannot fully
+enforce and related skills that are missing. See [agents](agents.md).
+
 ## Use a different local catalog
 
 ```sh

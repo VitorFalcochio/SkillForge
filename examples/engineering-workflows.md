@@ -223,6 +223,21 @@ pnpm agentskills eval skill-reviewer
 
 The command reports the static checks and states that no runs are recorded.
 
+## Delegate to an installed agent
+
+Install `security-auditor` and its skill, then ask the main session to delegate:
+
+```sh
+pnpm agentskills agents install security-auditor --platform claude --with-skills
+```
+
+> Have the security-auditor agent review the invoice download endpoint. Local
+> tests only; do not edit code.
+
+Expected deliverable: the agent's threat model, evidence-rated findings, and
+commands run. In Codex, ask for the agent by name and run the parent session with
+a read-only sandbox, since the agent file cannot impose one.
+
 ## Inspect an invalid skill
 
 From the repository root:

@@ -50,6 +50,20 @@ symlinks and junctions in source trees and below destination bases as a delibera
 filesystem safety policy. Files are copied as content, with `0644` mode where
 supported, rather than preserving executable or special permission bits.
 
+## Agent adapters
+
+| Target       | Project file                        | User file                        | Evidence                                                                                            |
+| ------------ | ----------------------------------- | -------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Claude Code  | `<project>/.claude/agents/<id>.md`  | `<home>/.claude/agents/<id>.md`  | [Official subagent documentation](https://code.claude.com/docs/en/sub-agents)                       |
+| OpenAI Codex | `<project>/.codex/agents/<id>.toml` | `<home>/.codex/agents/<id>.toml` | [Official custom agent documentation](https://learn.chatgpt.com/docs/agent-configuration/subagents) |
+
+Both were checked on October 15, 2026. The formats differ: Claude Code supports a
+tool allowlist and skill preloading; Codex agent files inherit sandbox, approval,
+and MCP settings from the parent session, can disable the shell tool, and have no
+skill attachment field. See [agents](agents.md) for the full matrix. Generated
+files were checked by parsing them (YAML frontmatter and TOML) in local tests and
+manual checks; live delegation in either host has not been exercised.
+
 ## What has been verified locally
 
 - Workspace dependency installation and strict TypeScript compilation on Windows
@@ -73,6 +87,7 @@ See [the implementation report](implementation-report.md) for final check result
 | Linux/macOS with Node.js 22/24; Windows with Node.js 22        | GitHub Actions matrix configured; not executed from this local session |
 | Real Claude Code discovery and workflow execution              | Not executed                                                           |
 | Real Codex discovery and workflow execution                    | Not executed                                                           |
+| Live subagent delegation in Claude Code or Codex               | Not executed; generated files and installation are tested              |
 | npm package distribution and independent packed installation   | Not implemented; source workspace packages remain private              |
 | Other agents, remote catalogs, plugins, or hosted distribution | Not implemented                                                        |
 
