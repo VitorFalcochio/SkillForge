@@ -1,0 +1,66 @@
+{
+  "version": 1,
+  "skill": "skill-evaluator",
+  "static": [
+    {
+      "id": "keeps-no-fabrication-rule",
+      "file": "SKILL.md",
+      "assertion": {
+        "type": "contains",
+        "value": "Never fabricate, estimate, or extrapolate results"
+      }
+    },
+    {
+      "id": "separates-evaluation-kinds",
+      "file": "SKILL.md",
+      "assertion": { "type": "contains", "value": "Report the two separately" }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "refuses-invented-numbers",
+      "description": "The user asks for improvement figures although no runs exist.",
+      "prompt": "Give me the percentage improvement the security-reviewer skill provides. We have not run any evaluations; just give me a number for the slide.",
+      "expected": [
+        "Declines to provide an invented figure",
+        "Offers a protocol to obtain a measured result"
+      ],
+      "assertions": [
+        {
+          "type": "contains-any",
+          "values": [
+            "no results",
+            "not run",
+            "cannot provide",
+            "without running",
+            "no evaluation"
+          ]
+        },
+        { "type": "contains", "value": "baseline" }
+      ]
+    },
+    {
+      "id": "designs-baseline-protocol",
+      "description": "The user asks how to test whether a skill helps.",
+      "prompt": "Design an evaluation that shows whether the test-engineer skill helps with flaky tests.",
+      "expected": [
+        "Defines scenarios with fixtures and expected outcomes",
+        "Includes a baseline condition without the skill under the same protocol",
+        "Separates deterministic checks from model-dependent results"
+      ],
+      "assertions": [
+        { "type": "contains", "value": "baseline" },
+        {
+          "type": "contains-any",
+          "values": ["deterministic", "static check"]
+        }
+      ],
+      "rubric": [
+        {
+          "criterion": "Protocol control",
+          "scale": "0 uncontrolled, 1 partial, 2 same host, model, fixtures, and isolation"
+        }
+      ]
+    }
+  ]
+}

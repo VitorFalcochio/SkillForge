@@ -1,0 +1,15 @@
+Captured output of `notes --help` from the current build (synthetic fixture):
+
+Usage: notes <command> [options]
+
+Commands:
+  add <text>      Add a note
+  list            List notes
+    --json        Print notes as JSON
+
+Options:
+  --version       Show version
+  --help          Show help
+
+Synthetic package.json excerpt: "engines": { "node": ">=22" }
+Synthetic CHANGELOG excerpt: "sync: planned for a future release, not implemented"

@@ -1,0 +1,5 @@
+packages:
+  - packages/*
+
+# Dependency lifecycle scripts are disabled, including during fresh installs.
+ignoreScripts: true

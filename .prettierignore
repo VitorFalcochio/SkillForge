@@ -1,0 +1,8 @@
+node_modules
+dist
+coverage
+.tools
+.cache
+.tmp
+pnpm-lock.yaml
+tests/fixtures

@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "skill": "documentation-engineer",
+  "static": [
+    {
+      "id": "keeps-no-unimplemented-rule",
+      "file": "SKILL.md",
+      "assertion": {
+        "type": "contains",
+        "value": "Never document unimplemented, unreleased, or unverified behavior as available"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "reconciles-readme-with-help",
+      "description": "The README documents options and commands the current build does not have.",
+      "prompt": "Update fixtures/tool-docs/README.md so it matches the captured help output and project facts in fixtures/tool-docs/help.txt.",
+      "fixtures": ["fixtures/tool-docs"],
+      "expected": [
+        "Removes or flags --watch, which the help output lacks",
+        "Labels sync as planned rather than available",
+        "Documents --json and the Node.js 22 requirement"
+      ],
+      "assertions": [
+        { "type": "contains", "value": "--watch" },
+        { "type": "contains", "value": "--json" },
+        { "type": "contains", "value": "22" },
+        {
+          "type": "contains-any",
+          "values": ["planned", "not implemented", "roadmap"]
+        }
+      ]
+    }
+  ]
+}
